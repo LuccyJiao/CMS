@@ -22,16 +22,17 @@ import java.util.Map;
  * Created by hs on 2018.12.27.
  */
 @Controller
-@RequestMapping("/index")
+@RequestMapping("/")
 public class LoginController {
 
     @Autowired
     private UserService userService;
 
-    //跳转首页（登录页）
+    Map map = new HashMap();
+
     @RequestMapping("")
     public String show(){
-        return "test";
+        return "login";
     }
 
     @RequestMapping("/cms")
@@ -40,49 +41,58 @@ public class LoginController {
     }
 
     @ResponseBody
-    @RequestMapping(value = "/check",method = RequestMethod.GET)
+    @RequestMapping(value = "/checkNameIsRegister",method = RequestMethod.GET)
     public MsgUtil checkUserName(@RequestParam("name") String username){
         boolean bl = userService.checkName(username);
         if(bl){
-            return MsgUtil.success();
-        }else{
             Map<String, Object> map = new HashMap<String, Object>();
             map.put("username", "用户名已被注册");
-            return MsgUtil.error().add("map", map);
+            return MsgUtil.error("map", map);
+        }else{
+            return MsgUtil.success();
         }
     }
 
-    //登录操作
+    /**
+     * 登陆管理系统
+     * @param user
+     * @param request
+     * @return
+     * @throws
+     */
     @ResponseBody
     @RequestMapping("/Login")
-    public MsgUtil login(User user, HttpServletRequest request) throws IOException {
-        User u1 =userService.login(user.getName(),user.getPassword());
-        if (u1==null) {
-            request.getSession().setAttribute("session_user",user);//登录成功后将用户放入session中，用于拦截
-            return MsgUtil.success();
+    public MsgUtil login(User user, HttpServletRequest request){
+        User u1 =userService.login(user.getId(),user.getPassword(),user.getRoleId());
+        if (u1!=null) {
+            request.getSession().setAttribute("session_user",u1);//登录成功后将用户放入session中，用于拦截
+            map.put("login_user",u1);
+            return MsgUtil.success().add("login_user",map);
         } else {
-            return MsgUtil.error();
+            map.put("msg","请检查用户名密码重新登陆！");
+            return MsgUtil.error("map", map);
         }
     }
 
-    //跳转注册页
+    /**
+     * 跳转注册页面
+     * @return
+     */
     @RequestMapping("/Register")
     public String toRegister(){
         return "register";
     }
 
-    //注册操作
+    /**
+     * 添加用户
+     * @param name
+     * @param password
+     * @return
+     */
     @ResponseBody
     @RequestMapping("/register")
     public MsgUtil Register(String name,String password) {
-        //判断该用户名是否已被注册
-        boolean u1 = userService.checkName(name);
 
-        if (u1) {
-            Map<String, Object> map2 = new HashMap<String, Object>();
-            map2.put("username", "用户名已被注册");
-            return MsgUtil.error().add("map", map2);
-        } else {
             User user = new User();
             user.setName(name);
             user.setPassword(password);
@@ -101,23 +111,32 @@ public class LoginController {
             if (flag==1) {
                 return MsgUtil.success();
             } else {
-                return MsgUtil.error();
+                return MsgUtil.error("map", null);
             }
-        }
+
     }
 
 
-    //测试未登陆拦截页面
+    /**
+     * 跳转管理系统主页
+     * @return
+     */
     @RequestMapping("/welcome")
     public String welcome(){
             return "welcome";
     }
 
-    //退出登录
+    /**
+     * 退出登录
+     * @param request
+     * @param response
+     * @return
+     * @throws IOException
+     */
     @RequestMapping("/SignOut")
     public String outUser(HttpServletRequest request, HttpServletResponse response) throws IOException {
         request.getSession().removeAttribute("session_user");
-        return "index";
+        return "login";
     }
 
 }
