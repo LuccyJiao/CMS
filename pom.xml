@@ -90,6 +90,7 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-validator</artifactId>
+            <version>5.1.2.Final</version>
         </dependency>
 
 
@@ -123,14 +124,15 @@
                     </execution>
                 </executions>
                 <!--此处必须添加mysql驱动包-->
-                <!--<dependencies>
+                <dependencies>
                     <dependency>
                         <groupId>mysql</groupId>
                         <artifactId>mysql-connector-java</artifactId>
                         <scope>runtime</scope>
                         <version>5.1.46</version>
                     </dependency>
-                </dependencies>-->
+                </dependencies>
+
             </plugin>
         </plugins>
     </build>
